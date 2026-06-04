@@ -25,10 +25,13 @@ mascote.addEventListener('click', () => {
   document.querySelector('.chat-wrapper').scrollIntoView({ behavior: 'smooth' });
 });
 
-// ───── CHAT COM IA (Claude API) ─────
+// ───── CHAT COM IA (Gemini API) ─────
 const chatInput = document.getElementById('chatInput');
 const chatSend = document.getElementById('chatSend');
 const chatMessages = document.getElementById('chatMessages');
+
+// 🔑 SUA CHAVE AQUI:
+const GEMINI_API_KEY = 'AQ.Ab8RN6J27fRyUqo-azv5XKdm_1BeegPrNUXXzcrYcFhj19THxg';
 
 const systemPrompt = `Você é o mentor da EmpreendIA, um assistente inteligente e animado que ajuda empreendedores brasileiros a crescerem no digital.
 Você tem a personalidade de um mentor experiente, direto, motivador e bem-humorado — como um fantoche carismático que entende de negócios.
@@ -86,28 +89,51 @@ async function sendMessage() {
   chatSend.disabled = true;
   addTyping();
 
-  conversationHistory.push({ role: 'user', content: text });
+  conversationHistory.push({
+    role: 'user',
+    parts: [{ text }]
+  });
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: conversationHistory
-      })
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': GEMINI_API_KEY
+        },
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          contents: conversationHistory
+        })
+      }
+    );
 
     const data = await response.json();
-    const reply = data.content[0].text;
 
-    conversationHistory.push({ role: 'assistant', content: reply });
+    if (!data.candidates) {
+      console.error('Resposta do Gemini:', JSON.stringify(data));
+      removeTyping();
+      addMessage('Erro: ' + (data.error?.message || 'Resposta inesperada'), 'bot');
+      chatSend.disabled = false;
+      return;
+    }
+
+    const reply = data.candidates[0].content.parts[0].text;
+
+    conversationHistory.push({
+      role: 'model',
+      parts: [{ text: reply }]
+    });
 
     removeTyping();
     addMessage(reply, 'bot');
+
   } catch (err) {
+    console.error('Erro ao chamar Gemini:', err);
     removeTyping();
     addMessage('Ops! Tive um probleminha técnico. Tenta de novo em instantes 😅', 'bot');
   }
