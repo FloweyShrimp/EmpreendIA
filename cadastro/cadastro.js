@@ -9,7 +9,7 @@ cadastroForm.addEventListener('submit', async (e) => {
   try {
     await auth.createUserWithEmailAndPassword(email, password);
     alert('Conta criada com sucesso!');
-    window.location.href = 'login.html';
+    window.location.href = '.././login/login.html';
   } catch (error) {
     alert(error.message);
   }

@@ -145,3 +145,7 @@ chatSend.addEventListener('click', sendMessage);
 chatInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') sendMessage();
 });
+
+function isLogged(){
+    
+}

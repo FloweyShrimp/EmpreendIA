@@ -7,8 +7,8 @@ loginForm.addEventListener('submit', async (e) => {
   const password = document.getElementById('senhaLogin').value;
 
   try {
-    await auth.signInWithEmailAndPassword(email, password);
-    window.location.href = 'dashboard.html';
+      await auth.signInWithEmailAndPassword(email, password);
+      window.location.href = '.././dashboard/dashboard.html';
   } catch (error) {
     alert(error.message);
   }
